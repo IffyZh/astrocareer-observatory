@@ -82,13 +82,13 @@ The first milestone will provide:
 
 ## Status
 
-**Pre-alpha.** There is no released dataset or scheduled production collection yet. One real Atom-feed adapter and an offline ROR institution importer have been implemented and remain subject to review before public releases.
+**Pre-alpha.** There is no released dataset or scheduled collection yet. One reviewed Atom-feed source is enabled for explicit command-line runs, and an offline ROR institution importer is implemented.
 
 Interfaces, schemas, and repository layout may change before the first tagged release.
 
 ## Local database quick start
 
-From a source checkout, initialize an empty schema-v7 SQLite database with:
+From a source checkout, initialize an empty schema-v8 SQLite database with:
 
 ```bash
 PYTHONPATH=src python3 -m astrocareer db init data/local/astrocareer.sqlite3

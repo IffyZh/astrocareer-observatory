@@ -46,5 +46,14 @@ Omitting `--dry-run` persists the offline fixture result. This command still use
 
 ## Production boundary
 
-No production network transport or real-source collector is enabled yet. A future production command must not expose the fixture-only disabled-source override.
+The reviewed Planetary Research Jobs feed can be fetched without writing data:
 
+```bash
+PYTHONPATH=src python3 -m astrocareer collect \
+  planetary-research-jobs-feed \
+  --database data/local/astrocareer.sqlite3 \
+  --registry data/sources.toml \
+  --dry-run
+```
+
+The production command uses the restricted `HTTPTransport`, does not expose the fixture-only disabled-source override, and enforces the source's saved minimum interval. A network dry run writes only the synchronized source registry and a minimal access-audit timestamp, so repeated dry runs cannot bypass that interval; it does not save response snapshots, source records, or normalization candidates. Remove `--dry-run` only after inspecting a successful live result; the persisted run stores provenance and normalization candidates for manual review, not accepted public job records.

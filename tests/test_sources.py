@@ -8,7 +8,7 @@ from astrocareer.database import connect_database, initialize_database
 from astrocareer.sources import load_source_registry, sync_source_registry
 
 
-def test_repository_source_registry_is_valid_and_disabled() -> None:
+def test_repository_source_registry_has_expected_access_states() -> None:
     registry_path = Path(__file__).parents[1] / "data" / "sources.toml"
 
     registry = load_source_registry(registry_path)
@@ -21,7 +21,7 @@ def test_repository_source_registry_is_valid_and_disabled() -> None:
     assert aas.enabled is False
     assert aas.access_status == "permission_required"
     planetary = registry["planetary-research-jobs-feed"]
-    assert planetary.enabled is False
+    assert planetary.enabled is True
     assert planetary.access_status == "approved"
     assert planetary.collection_method == "feed"
     assert planetary.allowed_path_prefixes == ("/feed",)

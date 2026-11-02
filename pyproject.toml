@@ -12,6 +12,7 @@ license = "Apache-2.0"
 authors = [
   { name = "AstroCareer Observatory contributors" },
 ]
+
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Environment :: Console",
@@ -24,6 +25,10 @@ classifiers = [
 dependencies = [
   "ijson>=3.3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/IffyZh/astrocareer-observatory"
+Repository = "https://github.com/IffyZh/astrocareer-observatory"
 
 [project.optional-dependencies]
 dev = [

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 MIGRATION_FILES = {
     1: "0001_initial.sql",
@@ -15,6 +15,7 @@ MIGRATION_FILES = {
     5: "0005_source_access_policies.sql",
     6: "0006_source_allowed_paths.sql",
     7: "0007_ror_institution_registry.sql",
+    8: "0008_source_access_attempts.sql",
 }
 
 

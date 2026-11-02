@@ -2,7 +2,7 @@
 
 [English](http-transport.md)
 
-`HTTPTransport` 是生产网络访问的唯一边界。目前代码已经实现，但还没有任何真实来源获得批准或启用。
+`HTTPTransport` 是生产网络访问的唯一边界。经过审查的 Planetary Research Jobs Atom feed 是第一个启用的真实来源。
 
 ## 访问前提
 
@@ -47,4 +47,3 @@
 - 网络错误使用结构化异常，不能产生成功批次。
 
 目前所有HTTP测试都使用假后端和固定DNS解析器，测试套件不会访问互联网。
-

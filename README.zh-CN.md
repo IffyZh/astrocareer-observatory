@@ -82,13 +82,13 @@ AstroCareer Observatory 目前处于预开发阶段。项目将收集、规范�
 
 ## 当前状态
 
-**Pre-alpha（预开发阶段）。** 项目尚未发布数据集，也没有启用定时生产采集。当前已经实现一个真实 Atom feed 适配器和一个离线 ROR 机构目录导入器；公开发布前仍需继续审查。
+**Pre-alpha（预开发阶段）。** 项目尚未发布数据集，也没有启用定时采集。当前已经启用一个经过审查、只能由明确命令触发的 Atom feed 来源，并实现了一个离线 ROR 机构目录导入器。
 
 在第一个带版本号的发布之前，接口、数据库模式和仓库结构都可能改变。
 
 ## 本地数据库快速开始
 
-在源码仓库中，可以使用以下命令初始化一个空的 schema-v7 SQLite 数据库：
+在源码仓库中，可以使用以下命令初始化一个空的 schema-v8 SQLite 数据库：
 
 ```bash
 PYTHONPATH=src python3 -m astrocareer db init data/local/astrocareer.sqlite3

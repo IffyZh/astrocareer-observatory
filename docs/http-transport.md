@@ -2,7 +2,7 @@
 
 [简体中文](http-transport.zh-CN.md)
 
-`HTTPTransport` is the production network boundary. It is implemented but no real source is approved or enabled yet.
+`HTTPTransport` is the production network boundary. The reviewed Planetary Research Jobs Atom feed is the first enabled real source.
 
 ## Access prerequisites
 
@@ -47,4 +47,3 @@ Review dates do not imply approval. Access status must be set explicitly.
 - network failures use structured exceptions and do not create successful batches.
 
 All current HTTP tests use a fake backend and fixed DNS resolver. The test suite performs no internet requests.
-

@@ -46,5 +46,14 @@ PYTHONPATH=src python3 -m astrocareer collect-fixture \
 
 ## 生产边界
 
-项目尚未启用生产网络传输层或真实来源采集器。未来的生产命令不能暴露fixture专用的“允许禁用来源”覆盖选项。
+可以在不写入数据的情况下采集经过审查的 Planetary Research Jobs feed：
 
+```bash
+PYTHONPATH=src python3 -m astrocareer collect \
+  planetary-research-jobs-feed \
+  --database data/local/astrocareer.sqlite3 \
+  --registry data/sources.toml \
+  --dry-run
+```
+
+生产命令使用受限的 `HTTPTransport`，不提供 fixture 专用的“允许禁用来源”覆盖参数，并执行来源登记中保存的最小访问间隔。网络干运行只会写入同步后的来源登记和最小化访问审计时间，因此不能通过重复 dry-run 绕过访问间隔；它不会保存响应快照、来源记录或规范化候选。只有在检查真实干运行成功后才应去掉 `--dry-run`；持久化运行只保存溯源信息和待人工审核的规范化候选，不会自动接受为公开岗位记录。

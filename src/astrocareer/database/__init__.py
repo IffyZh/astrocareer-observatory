@@ -1,5 +1,6 @@
 """SQLite storage for AstroCareer Observatory."""
 
+from astrocareer.database.access import record_source_access_attempt
 from astrocareer.database.core import (
     SelectionMetrics,
     calculate_selection_metrics,
@@ -21,5 +22,6 @@ __all__ = [
     "initialize_database",
     "persist_collection_batch",
     "persist_normalization_candidate",
+    "record_source_access_attempt",
     "seed_demo_data",
 ]

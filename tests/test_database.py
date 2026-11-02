@@ -25,10 +25,10 @@ from astrocareer.normalization import normalize_source_posting
 def test_initialize_database_creates_expected_tables(tmp_path: Path) -> None:
     database_path = tmp_path / "astrocareer.sqlite3"
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
     with connect_database(database_path) as connection:
-        assert get_schema_version(connection) == 7
+        assert get_schema_version(connection) == 8
         tables = {
             row[0]
             for row in connection.execute(
@@ -53,6 +53,7 @@ def test_initialize_database_creates_expected_tables(tmp_path: Path) -> None:
         "posting_languages",
         "normalization_candidates",
         "source_access_policies",
+        "source_access_attempts",
     } <= tables
 
 
@@ -60,7 +61,7 @@ def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
     database_path = tmp_path / "astrocareer.sqlite3"
     initialize_database(database_path)
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
 
 def test_initialize_database_migrates_schema_v1(tmp_path: Path) -> None:
@@ -69,10 +70,10 @@ def test_initialize_database_migrates_schema_v1(tmp_path: Path) -> None:
     with sqlite3.connect(database_path) as connection:
         connection.executescript(migration.read_text(encoding="utf-8"))
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
     with connect_database(database_path) as connection:
-        assert get_schema_version(connection) == 7
+        assert get_schema_version(connection) == 8
         assert connection.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='snapshots'"
         ).fetchone()
@@ -88,10 +89,10 @@ def test_initialize_database_migrates_schema_v2(tmp_path: Path) -> None:
         connection.executescript(migration_v1.read_text(encoding="utf-8"))
         connection.executescript(migration_v2.read_text(encoding="utf-8"))
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
     with connect_database(database_path) as connection:
-        assert get_schema_version(connection) == 7
+        assert get_schema_version(connection) == 8
         assert connection.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='employment_terms'"
         ).fetchone()
@@ -109,10 +110,10 @@ def test_initialize_database_migrates_schema_v3(tmp_path: Path) -> None:
             migration = files("astrocareer.database.migrations").joinpath(name)
             connection.executescript(migration.read_text(encoding="utf-8"))
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
     with connect_database(database_path) as connection:
-        assert get_schema_version(connection) == 7
+        assert get_schema_version(connection) == 8
         assert connection.execute(
             """
             SELECT 1 FROM sqlite_master
@@ -134,10 +135,10 @@ def test_initialize_database_migrates_schema_v4(tmp_path: Path) -> None:
             migration = files("astrocareer.database.migrations").joinpath(name)
             connection.executescript(migration.read_text(encoding="utf-8"))
 
-    assert initialize_database(database_path) == 7
+    assert initialize_database(database_path) == 8
 
     with connect_database(database_path) as connection:
-        assert get_schema_version(connection) == 7
+        assert get_schema_version(connection) == 8
         assert connection.execute(
             """
             SELECT 1 FROM sqlite_master

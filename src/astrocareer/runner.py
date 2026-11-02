@@ -5,7 +5,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from astrocareer.collectors import Checkpoint, CollectionStatus, Collector, Transport
-from astrocareer.database import persist_collection_batch, persist_normalization_candidate
+from astrocareer.database import (
+    persist_collection_batch,
+    persist_normalization_candidate,
+    record_source_access_attempt,
+)
 from astrocareer.normalization import normalize_source_posting
 from astrocareer.sources import SourceDefinition
 
@@ -50,13 +54,20 @@ def _enforce_minimum_interval(
 ) -> None:
     row = connection.execute(
         """
-        SELECT finished_at
-        FROM collection_runs
-        WHERE source_id = ?
-        ORDER BY finished_at DESC
+        SELECT accessed_at
+        FROM (
+            SELECT finished_at AS accessed_at
+            FROM collection_runs
+            WHERE source_id = ?
+            UNION ALL
+            SELECT requested_at AS accessed_at
+            FROM source_access_attempts
+            WHERE source_id = ?
+        )
+        ORDER BY accessed_at DESC
         LIMIT 1
         """,
-        (source.source_id,),
+        (source.source_id, source.source_id),
     ).fetchone()
     if not row:
         return
@@ -80,6 +91,8 @@ def run_collection(
     dry_run: bool = False,
     allow_disabled: bool = False,
     enforce_interval: bool = True,
+    record_network_access: bool = False,
+    contact_url: str | None = None,
     now: datetime | None = None,
 ) -> RunReport:
     """Run one source safely and optionally persist its reviewable output."""
@@ -95,6 +108,18 @@ def run_collection(
         raise ValueError("Runner time must be timezone-aware")
     if enforce_interval:
         _enforce_minimum_interval(connection, source, current_time)
+
+    if record_network_access:
+        if contact_url is None:
+            raise ValueError("A contact URL is required when recording network access")
+        with connection:
+            record_source_access_attempt(
+                connection,
+                source_id=source.source_id,
+                requested_at=current_time,
+                mode="dry_run" if dry_run else "persisted",
+                contact_url=contact_url,
+            )
 
     checkpoint_value = _previous_checkpoint(connection, source.source_id)
     checkpoint = Checkpoint(checkpoint_value) if checkpoint_value else None
@@ -149,4 +174,3 @@ def run_collection(
         persisted=True,
         run_id=run_id,
     )
-

@@ -46,7 +46,7 @@ The feed and public listings require no account. Authentication is not permitted
 - [ ] `prohibited`
 - [ ] `pending_review`
 
-One unauthenticated GET of the documented all-jobs Atom feed is approved, no more frequently than every six hours. HTML listing and detail pages are outside this approval. The source remains disabled in the registry until implementation review and a public project contact URL are complete.
+One unauthenticated GET of the documented all-jobs Atom feed is approved, no more frequently than every six hours. HTML listing and detail pages are outside this approval. Implementation review is complete and the public project repository is used as the contact URL.
 
 Reviewer: AstroCareer Observatory project review
 
@@ -63,7 +63,7 @@ Decision date: 2026-11-01
 - Maximum accepted response size: 2 MB
 - Pagination: none observed; the feed represents current visible announcements
 - Stable identifier: the Atom entry `id`, matching the site's announcement URL
-- Project contact URL: required before enabling live requests
+- Project contact URL: <https://github.com/IffyZh/astrocareer-observatory>
 
 Conditional GET validators should be used when the server provides `ETag` or `Last-Modified`.
 
@@ -103,11 +103,15 @@ Feed content can contain contact names, email addresses, ORCID identifiers, and 
 - [x] Personal-data handling is documented.
 - [x] Normal, empty, malformed, and layout-change fixtures pass.
 - [x] No credential is required.
-- [x] Source remains disabled until implementation review is complete.
-- [ ] A public project contact URL is configured.
+- [x] Source remained disabled until implementation review was complete.
+- [x] A public project contact URL is configured.
 
 ## 10. Final notes
 
 This review approves feed access, not republication of feed content and not crawling official employer links. Re-review before expanding the collected fields or request surface.
 
-Implementation review result, 2026-11-01: the collector passed synthetic normal, empty, malformed, partial, unsafe-XML, foreign-host, and layout-change tests. A transient snapshot of the live feed parsed successfully with 125 records and no parser issues. The snapshot was stored only under `/tmp` and is not part of the repository or database. The source remains disabled pending a public project contact URL.
+Implementation review result, 2026-11-01: the collector passed synthetic normal, empty, malformed, partial, unsafe-XML, foreign-host, and layout-change tests. A transient snapshot of the live feed parsed successfully with 125 records and no parser issues. The snapshot was stored only under `/tmp` and is not part of the repository or database.
+
+Enablement result, 2026-11-02: the public repository at <https://github.com/IffyZh/astrocareer-observatory> now provides the required project contact URL. The reviewed feed source is enabled with the six-hour minimum interval, one-request collection boundary, and 2 MB response limit documented above.
+
+First enabled live dry run, 2026-11-02: one request returned 131 records, zero parser issues, and 131 normalization candidates. No response snapshot, source record, or candidate was persisted. A minimal local access-audit timestamp is retained so that dry runs cannot bypass the six-hour interval.

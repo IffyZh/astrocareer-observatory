@@ -7,11 +7,15 @@ from pathlib import Path
 from astrocareer import __version__
 from astrocareer.collectors.demo import DemoCollector
 from astrocareer.collectors.fixture import FixtureTransport
+from astrocareer.collectors.http import HTTPTransport, TransportError
 from astrocareer.collectors.planetary_research import PlanetaryResearchFeedCollector
 from astrocareer.database import connect_database, initialize_database, seed_demo_data
 from astrocareer.importers import import_ror_dump
-from astrocareer.runner import run_collection
+from astrocareer.runner import CollectionBlocked, run_collection
 from astrocareer.sources import load_source_registry, sync_source_registry
+
+
+PROJECT_CONTACT_URL = "https://github.com/IffyZh/astrocareer-observatory"
 
 
 def _fixture_collector(source_id: str):
@@ -27,6 +31,20 @@ def _fixture_collector(source_id: str):
         return collectors[source_id]
     except KeyError as error:
         raise ValueError(f"No fixture collector is registered for {source_id}") from error
+
+
+def _network_collector(source_id: str):
+    collectors = {
+        PlanetaryResearchFeedCollector.source_id: (
+            PlanetaryResearchFeedCollector(),
+            "planetary-research-feed-1",
+            2_000_000,
+        ),
+    }
+    try:
+        return collectors[source_id]
+    except KeyError as error:
+        raise ValueError(f"No production collector is registered for {source_id}") from error
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -73,6 +91,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         help="Parse and normalize without writing collection data.",
+    )
+    collect_parser = subparsers.add_parser(
+        "collect",
+        help="Collect one reviewed and enabled network source.",
+    )
+    collect_parser.add_argument("source_id", help="Registered source ID.")
+    collect_parser.add_argument("--database", required=True, type=Path)
+    collect_parser.add_argument("--registry", required=True, type=Path)
+    collect_parser.add_argument(
+        "--contact-url",
+        default=PROJECT_CONTACT_URL,
+        help="Public HTTPS project contact URL sent in the User-Agent.",
+    )
+    collect_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Fetch, parse, and normalize without writing collection data.",
     )
     return parser
 
@@ -140,6 +175,50 @@ def main(argv: Sequence[str] | None = None) -> int:
         mode = "dry-run" if args.dry_run else "persisted"
         print(
             f"{mode}: status={report.collection_status.value} "
+            f"records={report.record_count} issues={report.issue_count} "
+            f"candidates={report.candidate_count}"
+        )
+    elif args.command == "collect":
+        try:
+            collector, collector_version, max_response_bytes = _network_collector(
+                args.source_id
+            )
+        except ValueError as error:
+            parser.error(str(error))
+        initialize_database(args.database)
+        registry = load_source_registry(args.registry)
+        try:
+            source = registry[args.source_id]
+        except KeyError:
+            parser.error(f"Source is not registered: {args.source_id}")
+        try:
+            transport = HTTPTransport(
+                source,
+                contact_url=args.contact_url,
+                max_response_bytes=max_response_bytes,
+            )
+        except ValueError as error:
+            parser.error(str(error))
+        with connect_database(args.database) as connection:
+            sync_source_registry(connection, registry)
+            try:
+                report = run_collection(
+                    connection,
+                    source=source,
+                    collector=collector,
+                    transport=transport,
+                    collector_version=collector_version,
+                    normalizer_version="rules-1",
+                    dry_run=args.dry_run,
+                    record_network_access=True,
+                    contact_url=args.contact_url,
+                )
+            except (CollectionBlocked, TransportError) as error:
+                parser.error(str(error))
+        mode = "dry-run" if args.dry_run else "persisted"
+        print(
+            f"{mode}: source={report.source_id} "
+            f"status={report.collection_status.value} "
             f"records={report.record_count} issues={report.issue_count} "
             f"candidates={report.candidate_count}"
         )

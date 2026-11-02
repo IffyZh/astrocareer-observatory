@@ -154,3 +154,49 @@ def test_minimum_interval_blocks_repeated_run(tmp_path: Path) -> None:
                 normalizer_version="rules-1",
                 now=NOW + timedelta(minutes=1),
             )
+
+
+def test_network_dry_run_records_access_and_blocks_repeat(tmp_path: Path) -> None:
+    database_path = tmp_path / "astrocareer.sqlite3"
+    initialize_database(database_path)
+    source = _source()
+
+    with connect_database(database_path) as connection:
+        sync_source_registry(connection, {source.source_id: source})
+        report = run_collection(
+            connection,
+            source=source,
+            collector=DemoCollector(),
+            transport=_transport(),
+            collector_version="demo-1",
+            normalizer_version="rules-1",
+            dry_run=True,
+            record_network_access=True,
+            contact_url="https://example.test/astrocareer",
+            now=NOW,
+        )
+        access = connection.execute(
+            """
+            SELECT mode, contact_url
+            FROM source_access_attempts
+            WHERE source_id = ?
+            """,
+            (source.source_id,),
+        ).fetchone()
+        with pytest.raises(CollectionBlocked, match="rate-limited"):
+            run_collection(
+                connection,
+                source=source,
+                collector=DemoCollector(),
+                transport=_transport(),
+                collector_version="demo-1",
+                normalizer_version="rules-1",
+                dry_run=True,
+                record_network_access=True,
+                contact_url="https://example.test/astrocareer",
+                now=NOW + timedelta(minutes=1),
+            )
+
+    assert report.persisted is False
+    assert access["mode"] == "dry_run"
+    assert access["contact_url"] == "https://example.test/astrocareer"
