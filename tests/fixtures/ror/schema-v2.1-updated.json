@@ -1,0 +1,32 @@
+[
+  {
+    "admin": {
+      "created": {"date": "2020-01-15", "schema_version": "2.0"},
+      "last_modified": {"date": "2026-11-01", "schema_version": "2.1"}
+    },
+    "domains": ["new-observatory.example"],
+    "established": 1965,
+    "external_ids": [],
+    "id": "https://ror.org/01abcde12",
+    "links": [{"type": "website", "value": "https://new-observatory.example/"}],
+    "locations": [
+      {
+        "geonames_id": 123456,
+        "geonames_details": {
+          "continent_code": "EU",
+          "country_code": "EX",
+          "country_name": "Exampleland",
+          "lat": 42.5,
+          "lng": -1.25,
+          "name": "Example City"
+        }
+      }
+    ],
+    "names": [
+      {"lang": "en", "types": ["ror_display", "label"], "value": "Example Observatory and Archive"}
+    ],
+    "relationships": [],
+    "status": "inactive",
+    "types": ["archive", "facility"]
+  }
+]

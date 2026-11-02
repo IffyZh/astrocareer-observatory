@@ -1,0 +1,62 @@
+name: Source review / 来源审查
+description: Propose a public job source for compliance and implementation review.
+title: "[Source review] "
+labels: ["source-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, cookies, private correspondence, or personal applicant data.
+        请勿提交凭据、Cookie、私人通信或申请者个人数据。
+  - type: input
+    id: source_name
+    attributes:
+      label: Source name / 来源名称
+    validations:
+      required: true
+  - type: input
+    id: homepage
+    attributes:
+      label: Official homepage / 官方主页
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Intended use / 预期用途
+    validations:
+      required: true
+  - type: dropdown
+    id: access_method
+    attributes:
+      label: Best supported access method / 最佳受支持访问方式
+      options:
+        - Official API
+        - RSS or Atom feed
+        - Email subscription
+        - Downloadable dataset
+        - Public HTML
+        - Manual only
+        - Not yet known
+    validations:
+      required: true
+  - type: input
+    id: robots
+    attributes:
+      label: Robots URL
+  - type: input
+    id: terms
+    attributes:
+      label: Terms URL / 使用条款URL
+  - type: textarea
+    id: restrictions
+    attributes:
+      label: Known restrictions or unresolved questions / 已知限制或待解决问题
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety acknowledgement / 安全确认
+      options:
+        - label: I have not included secrets or personal applicant data. / 我没有提交秘密或申请者个人数据。
+          required: true
+

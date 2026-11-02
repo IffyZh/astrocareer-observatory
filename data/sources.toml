@@ -1,0 +1,69 @@
+schema_version = 1
+
+[[sources]]
+source_id = "demo-html-source"
+name = "Example Observatory HTML fixture"
+organization = "Example Observatory"
+homepage_url = "https://careers.example-observatory.test/"
+source_type = "employer"
+authority_level = "a"
+collection_method = "html"
+enabled = false
+access_status = "pending_review"
+robots_reviewed_at = "2026-11-01"
+terms_reviewed_at = "2026-11-01"
+allowed_hosts = ["careers.example-observatory.test"]
+allowed_path_prefixes = ["/jobs/"]
+minimum_interval_seconds = 3600
+redistribution_notes = "Fictional .test source. No real network endpoint exists."
+
+[[sources]]
+source_id = "aas-job-register"
+name = "AAS Job Register"
+organization = "American Astronomical Society"
+homepage_url = "https://aas.org/jobregister"
+source_type = "professional_society"
+authority_level = "b"
+collection_method = "manual"
+enabled = false
+access_status = "permission_required"
+robots_reviewed_at = "2026-11-01"
+terms_reviewed_at = "2026-11-01"
+allowed_hosts = ["aas.org"]
+allowed_path_prefixes = ["/jobregister"]
+minimum_interval_seconds = 86400
+redistribution_notes = "AAS terms prohibit spidering and scraping. Automated collection requires express written permission; full advertisements must not be republished by default."
+
+[[sources]]
+source_id = "planetary-research-jobs-feed"
+name = "Planetary Research Jobs Atom feed"
+organization = "Planetary Research Cooperative"
+homepage_url = "https://jobs.planetary-research.org/"
+source_type = "job_board"
+authority_level = "b"
+collection_method = "feed"
+enabled = false
+access_status = "approved"
+robots_reviewed_at = "2026-11-01"
+terms_reviewed_at = "2026-11-01"
+allowed_hosts = ["jobs.planetary-research.org"]
+allowed_path_prefixes = ["/feed"]
+minimum_interval_seconds = 21600
+redistribution_notes = "The site explicitly provides /feed for RSS/Atom readers. Publish provenance and minimal normalized facts only; exclude full descriptions, contact details, and poster ORCID identifiers."
+
+[[sources]]
+source_id = "ror-data-dump"
+name = "Research Organization Registry data dump"
+organization = "Research Organization Registry"
+homepage_url = "https://ror.org/registry"
+source_type = "research_dataset"
+authority_level = "a"
+collection_method = "import"
+enabled = true
+access_status = "approved"
+robots_reviewed_at = "2026-11-01"
+terms_reviewed_at = "2026-11-01"
+allowed_hosts = ["ror.org"]
+allowed_path_prefixes = ["/registry"]
+minimum_interval_seconds = 0
+redistribution_notes = "ROR IDs and registry metadata are provided under CC0 1.0. Import only official versioned ROR schema 2.x data dumps; logo rights are separate."

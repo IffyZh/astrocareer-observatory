@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <id>https://jobs.planetary-research.org/feed</id>
+  <title>Planetary Research Jobs</title>
+  <updated>2026-11-01T12:00:00+00:00</updated>
+  <entry>
+    <id>https://jobs.planetary-research.org/demo-1001</id>
+    <title>Planetary Data Research Software Engineer</title>
+    <updated>2026-11-01T12:00:00+00:00</updated>
+    <published>2026-10-30T09:15:00+00:00</published>
+    <summary>Scientific and technical staff</summary>
+    <link href="https://jobs.planetary-research.org/demo-1001"/>
+    <content type="html">&lt;div class="job-summary-box"&gt;&lt;p&gt;
+      &lt;span class="job-label-header"&gt;Institution: &lt;/span&gt;Example Planetary Institute&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Department: &lt;/span&gt;Data Systems&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Location: &lt;/span&gt;Example City, Exampleland&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Work arrangement: &lt;/span&gt;Hybrid&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Duration: &lt;/span&gt;36 months&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Salary: &lt;/span&gt;EUR 70,000 per year&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Number of positions: &lt;/span&gt;1&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Application deadline: &lt;/span&gt;2026-12-15&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Start date: &lt;/span&gt;2027-03-01&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Official announcement: &lt;/span&gt;&lt;a href="https://careers.example.test/rse-1001"&gt;external link&lt;/a&gt;&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Reference code: &lt;/span&gt;RSE-1001&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Inquiries: &lt;/span&gt;&lt;a href="mailto:private@example.test"&gt;Private Contact&lt;/a&gt;&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Posted: &lt;/span&gt;2026-10-30&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Posted by: &lt;/span&gt;&lt;a href="https://orcid.org/0000-0000-0000-0000"&gt;0000-0000-0000-0000&lt;/a&gt;&lt;br/&gt;
+    &lt;/p&gt;&lt;/div&gt;
+    &lt;div class="job-description"&gt;&lt;p&gt;Copyrighted description not for normalized storage. Requires Python and SQL.&lt;/p&gt;&lt;/div&gt;</content>
+  </entry>
+  <entry>
+    <id>https://jobs.planetary-research.org/demo-1002</id>
+    <title>Postdoctoral Fellow in Exoplanet Atmospheres</title>
+    <updated>2026-10-29T10:00:00+00:00</updated>
+    <published>2026-10-29T10:00:00+00:00</published>
+    <summary>Postdocs and fellowships</summary>
+    <link rel="alternate" href="https://jobs.planetary-research.org/demo-1002"/>
+    <content type="html">&lt;div class="job-summary-box"&gt;&lt;p&gt;
+      &lt;span class="job-label-header"&gt;Institution: &lt;/span&gt;Example University&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Application deadline: &lt;/span&gt;2027-01-05&lt;br/&gt;
+      &lt;span class="job-label-header"&gt;Posted: &lt;/span&gt;2026-10-29&lt;br/&gt;
+    &lt;/p&gt;&lt;/div&gt;</content>
+  </entry>
+</feed>

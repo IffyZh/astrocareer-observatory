@@ -1,0 +1,30 @@
+[
+  {
+    "admin": {
+      "created": {"date": "2020-01-15", "schema_version": "2.0"},
+      "last_modified": {"date": "2026-10-01", "schema_version": "2.1"}
+    },
+    "domains": ["valid.example"],
+    "id": "https://ror.org/01valid12",
+    "links": [],
+    "locations": [],
+    "names": [{"lang": "en", "types": ["ror_display"], "value": "Valid First Record"}],
+    "relationships": [],
+    "status": "active",
+    "types": ["facility"]
+  },
+  {
+    "admin": {
+      "created": {"date": "2020-01-15", "schema_version": "2.0"},
+      "last_modified": {"date": "2026-10-01", "schema_version": "2.1"}
+    },
+    "domains": ["invalid.example/path"],
+    "id": "https://ror.org/02inval34",
+    "links": [],
+    "locations": [],
+    "names": [{"lang": "en", "types": ["ror_display"], "value": "Invalid Second Record"}],
+    "relationships": [],
+    "status": "active",
+    "types": ["facility"]
+  }
+]
