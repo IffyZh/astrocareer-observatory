@@ -1,10 +1,13 @@
 """Tests for the reviewed ROR Schema 2.x institution import."""
 
+import json
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 from astrocareer.database import connect_database, initialize_database
+from astrocareer.importers import ror
 from astrocareer.importers.ror import import_ror_dump
 from astrocareer.sources import load_source_registry, sync_source_registry
 
@@ -147,3 +150,31 @@ def test_invalid_dump_rolls_back_all_records(tmp_path: Path) -> None:
 
     assert institution_count == 0
     assert run_count == 0
+
+
+def test_ijson_decimal_coordinates_are_normalized(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    records = json.loads((FIXTURES / "schema-v2.1.json").read_text(encoding="utf-8"))
+    details = records[0]["locations"][0]["geonames_details"]
+    details["lat"] = Decimal("42.5")
+    details["lng"] = Decimal("-1.25")
+    monkeypatch.setattr(ror, "_iter_records", lambda _: iter(records))
+
+    with _database(tmp_path) as connection:
+        import_ror_dump(
+            connection,
+            FIXTURES / "schema-v2.1.json",
+            dataset_version="v-decimal-test",
+        )
+        location = connection.execute(
+            """
+            SELECT latitude, longitude
+            FROM institution_locations
+            WHERE institution_id = ?
+            """,
+            ("https://ror.org/01abcde12",),
+        ).fetchone()
+
+    assert tuple(location) == (42.5, -1.25)

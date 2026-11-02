@@ -6,6 +6,8 @@ import re
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from decimal import Decimal
+from math import isfinite
 from pathlib import Path
 from typing import Any, Iterator
 from uuid import uuid4
@@ -152,6 +154,25 @@ def _schema_versions(record: dict[str, Any]) -> set[str]:
     if not versions or any(not version.startswith("2.") for version in versions):
         raise ValueError("ROR import requires Schema 2.x records")
     return versions
+
+
+def _coordinate(
+    value: object,
+    *,
+    field: str,
+    minimum: float,
+    maximum: float,
+    ror_id: str,
+) -> float | None:
+    """Normalize stdlib JSON floats and ijson Decimal values for SQLite."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+        raise ValueError(f"ROR {field} must be numeric for {ror_id}")
+    coordinate = float(value)
+    if not isfinite(coordinate) or not minimum <= coordinate <= maximum:
+        raise ValueError(f"ROR {field} is outside its valid range for {ror_id}")
+    return coordinate
 
 
 def _upsert_record(
@@ -302,8 +323,20 @@ def _upsert_record(
                 details.get("country_subdivision_code"),
                 details.get("country_subdivision_name"),
                 details.get("continent_code"),
-                details.get("lat"),
-                details.get("lng"),
+                _coordinate(
+                    details.get("lat"),
+                    field="latitude",
+                    minimum=-90.0,
+                    maximum=90.0,
+                    ror_id=ror_id,
+                ),
+                _coordinate(
+                    details.get("lng"),
+                    field="longitude",
+                    minimum=-180.0,
+                    maximum=180.0,
+                    ror_id=ror_id,
+                ),
                 source_id,
             ),
         )
