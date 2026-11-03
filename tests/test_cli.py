@@ -30,7 +30,7 @@ def test_plugin_commands(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["plugins", "inspect", "planetary-research-jobs-feed"]) == 0
     details = capsys.readouterr().out
     assert "api_version=1" in details
-    assert "collector_version=planetary-research-feed-1" in details
+    assert "collector_version=planetary-research-feed-2" in details
     assert "supports_network=yes" in details
 
 

@@ -303,7 +303,7 @@ plugin = CollectorPlugin(
     source_id=DemoCollector.source_id,
     collector_factory=DemoCollector,
     collector_version="demo-1",
-    normalizer_version="rules-1",
+    normalizer_version="rules-2",
     fixture_content_type="text/html; charset=utf-8",
     max_response_bytes=1_000_000,
     supports_network=False,

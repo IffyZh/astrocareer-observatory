@@ -86,10 +86,17 @@ class NormalizedPostingCandidate:
     source_id: str
     source_record_id: str
     snapshot_sha256: str
+    canonical_url: str
     official_title: str
     normalized_title: str
+    source_category_text: str | None
     institution_text: str | None
+    department_text: str | None
     location_text: str | None
+    positions_available: NormalizedField[int]
+    extension_possible: NormalizedField[bool]
+    reference_code_text: str | None
+    official_announcement_url: str | None
     job_family: NormalizedField[str]
     posted_at: NormalizedDate
     application_deadline_at: NormalizedDate
@@ -100,4 +107,3 @@ class NormalizedPostingCandidate:
     def as_dict(self) -> dict[str, object]:
         """Return a JSON-ready representation with string-valued enums."""
         return asdict(self)
-

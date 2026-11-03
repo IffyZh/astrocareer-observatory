@@ -52,7 +52,9 @@ def test_normal_feed_produces_minimal_source_records() -> None:
     first = batch.records[0]
     assert first.source_record_id == "demo-1001"
     assert first.official_title == "Planetary Data Research Software Engineer"
+    assert first.source_category_text == "Scientific and technical staff"
     assert first.institution_text == "Example Planetary Institute"
+    assert first.department_text == "Data Systems"
     assert first.location_text == "Example City, Exampleland"
     assert first.posted_at_text == "2026-10-30"
     assert first.deadline_text == "2026-12-15"
@@ -60,6 +62,9 @@ def test_normal_feed_produces_minimal_source_records() -> None:
     assert first.salary_text == "EUR 70,000 per year"
     assert first.start_date_text == "2027-03-01"
     assert first.work_mode_text == "Hybrid"
+    assert first.positions_text == "1"
+    assert first.reference_code_text == "RSE-1001"
+    assert first.official_announcement_url == "https://careers.example.test/rse-1001"
     assert dict(first.raw_fields) == {
         "source_category": "Scientific and technical staff",
         "department": "Data Systems",

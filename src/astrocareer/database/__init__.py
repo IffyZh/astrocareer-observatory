@@ -11,6 +11,10 @@ from astrocareer.database.core import (
 from astrocareer.database.collection import persist_collection_batch
 from astrocareer.database.demo import DEMO_POSTING_ID, DEMO_ROUND_ID, seed_demo_data
 from astrocareer.database.normalization import persist_normalization_candidate
+from astrocareer.database.renormalization import (
+    RenormalizationReport,
+    renormalize_source_observations,
+)
 
 __all__ = [
     "SelectionMetrics",
@@ -22,6 +26,8 @@ __all__ = [
     "initialize_database",
     "persist_collection_batch",
     "persist_normalization_candidate",
+    "RenormalizationReport",
+    "renormalize_source_observations",
     "record_source_access_attempt",
     "seed_demo_data",
 ]

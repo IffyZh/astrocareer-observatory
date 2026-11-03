@@ -107,7 +107,9 @@ class SourcePosting:
     snapshot_sha256: str
     canonical_url: str
     official_title: str
+    source_category_text: str | None = None
     institution_text: str | None = None
+    department_text: str | None = None
     location_text: str | None = None
     posted_at_text: str | None = None
     deadline_text: str | None = None
@@ -120,6 +122,10 @@ class SourcePosting:
     requirement_texts: tuple[str, ...] = field(default_factory=tuple)
     skill_texts: tuple[str, ...] = field(default_factory=tuple)
     international_eligibility_text: str | None = None
+    positions_text: str | None = None
+    extension_text: str | None = None
+    reference_code_text: str | None = None
+    official_announcement_url: str | None = None
     raw_fields: tuple[tuple[str, str], ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:

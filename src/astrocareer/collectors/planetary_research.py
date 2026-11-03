@@ -286,7 +286,9 @@ class PlanetaryResearchFeedCollector:
             snapshot_sha256=snapshot.content_sha256,
             canonical_url=canonical_url,
             official_title=title,
+            source_category_text=category,
             institution_text=value("institution"),
+            department_text=value("department"),
             location_text=value("location"),
             posted_at_text=value("posted") or published,
             deadline_text=value("application deadline"),
@@ -294,6 +296,10 @@ class PlanetaryResearchFeedCollector:
             salary_text=value("salary"),
             start_date_text=value("start date"),
             work_mode_text=value("work arrangement"),
+            positions_text=value("number of positions"),
+            extension_text=value("can be extended"),
+            reference_code_text=value("reference code"),
+            official_announcement_url=official.href if official else None,
             raw_fields=tuple(raw_fields),
         )
 
@@ -359,8 +365,8 @@ class PlanetaryResearchFeedCollector:
 plugin = CollectorPlugin(
     source_id=PlanetaryResearchFeedCollector.source_id,
     collector_factory=PlanetaryResearchFeedCollector,
-    collector_version="planetary-research-feed-1",
-    normalizer_version="rules-1",
+    collector_version="planetary-research-feed-2",
+    normalizer_version="rules-2",
     fixture_content_type="application/atom+xml; charset=utf-8",
     max_response_bytes=2_000_000,
     supports_network=True,

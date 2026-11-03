@@ -84,3 +84,12 @@ PYTHONPATH=src python3 -m astrocareer replay-capture \
 ```
 
 只有确实需要保存离线重放结果时才去掉 `--dry-run`。解析器实验应优先使用单独的重放数据库，以免与主要观察历史混在一起。
+
+如果只修改了规范化规则，可以直接用已保存的来源观察记录重建候选项，无需重放或再次请求 feed：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db renormalize-source \
+  data/local/astrocareer.sqlite3 planetary-research-jobs-feed
+```
+
+同一规范化版本重复执行不会产生重复记录。命令不会修改来源观察记录；旧版待审核候选会标为 `superseded`，当前版本候选以 `pending` 状态等待审核。

@@ -84,3 +84,15 @@ PYTHONPATH=src python3 -m astrocareer replay-capture \
 ```
 
 Omit `--dry-run` only when a persisted offline replay is intentionally needed. Prefer a separate replay database so parser experiments do not mix with the primary observation history.
+
+When only normalization rules change, rebuild candidates directly from saved
+source observations without replaying or requesting the feed:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db renormalize-source \
+  data/local/astrocareer.sqlite3 planetary-research-jobs-feed
+```
+
+The command is idempotent for one normalizer version. It leaves source
+observations unchanged, marks older pending candidates as `superseded`, and
+creates current candidates as `pending` for review.

@@ -8,7 +8,12 @@ from astrocareer import __version__
 from astrocareer.collectors.capture import CaptureError, CaptureTransport, ReplayTransport
 from astrocareer.collectors.fixture import FixtureTransport
 from astrocareer.collectors.http import HTTPTransport, TransportError
-from astrocareer.database import connect_database, initialize_database, seed_demo_data
+from astrocareer.database import (
+    connect_database,
+    initialize_database,
+    renormalize_source_observations,
+    seed_demo_data,
+)
 from astrocareer.importers import import_ror_dump
 from astrocareer.plugins import (
     PluginError,
@@ -61,6 +66,12 @@ def build_parser() -> argparse.ArgumentParser:
     ror_parser.add_argument("dump", type=Path, help="Path to the extracted ROR JSON dump.")
     ror_parser.add_argument("--dataset-version", required=True)
     ror_parser.add_argument("--registry", required=True, type=Path)
+    renormalize_parser = database_subparsers.add_parser(
+        "renormalize-source",
+        help="Rebuild candidates from saved observations without network access.",
+    )
+    renormalize_parser.add_argument("path", type=Path, help="Path to the SQLite database.")
+    renormalize_parser.add_argument("source_id", help="Collector plugin source ID.")
     plugins_parser = subparsers.add_parser(
         "plugins", help="List and inspect collector plugins."
     )
@@ -159,6 +170,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"ROR {disposition}: version={report.dataset_version} "
             f"records={report.record_count} inserted={report.inserted_count} "
             f"updated={report.updated_count} sha256={report.content_sha256}"
+        )
+    elif args.command == "db" and args.database_command == "renormalize-source":
+        try:
+            plugin = _collector_plugin(args.source_id)
+        except PluginError as error:
+            parser.error(str(error))
+        initialize_database(args.path)
+        with connect_database(args.path) as connection:
+            report = renormalize_source_observations(
+                connection,
+                source_id=args.source_id,
+                normalizer_version=plugin.normalizer_version,
+            )
+        print(
+            f"renormalized: source={report.source_id} "
+            f"version={report.normalizer_version} "
+            f"observations={report.observation_count} "
+            f"inserted={report.inserted_count} reused={report.reused_count} "
+            f"superseded={report.superseded_count}"
         )
     elif args.command == "plugins" and args.plugin_command == "list":
         try:
