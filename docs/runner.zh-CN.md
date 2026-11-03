@@ -57,3 +57,30 @@ PYTHONPATH=src python3 -m astrocareer collect \
 ```
 
 生产命令使用受限的 `HTTPTransport`，不提供 fixture 专用的“允许禁用来源”覆盖参数，并执行来源登记中保存的最小访问间隔。网络干运行只会写入同步后的来源登记和最小化访问审计时间，因此不能通过重复 dry-run 绕过访问间隔；它不会保存响应快照、来源记录或规范化候选。只有在检查真实干运行成功后才应去掉 `--dry-run`；持久化运行只保存溯源信息和待人工审核的规范化候选，不会自动接受为公开岗位记录。
+
+## 本地捕获与离线重放
+
+在一次正常网络采集中保存响应：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer collect \
+  planetary-research-jobs-feed \
+  --database data/local/astrocareer.sqlite3 \
+  --registry data/sources.toml \
+  --capture-local data/local/captures/planetary-2026-11-03.capture.zip
+```
+
+捕获文件是不可变的 ZIP，其中包含响应字节，以及记录 URL、观察时间、HTTP 元数据和 SHA-256 摘要的小型清单。已有捕获绝不会被覆盖。捕获可能含有第三方文本或个人信息，因此应保存在被 Git 忽略的 `data/local/` 下；未经单独的数据权利审查不得发布。
+
+可以无限次离线重放该响应，不访问网络，也不计入来源冷却：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer replay-capture \
+  planetary-research-jobs-feed \
+  data/local/captures/planetary-2026-11-03.capture.zip \
+  --database data/local/replay.sqlite3 \
+  --registry data/sources.toml \
+  --dry-run
+```
+
+只有确实需要保存离线重放结果时才去掉 `--dry-run`。解析器实验应优先使用单独的重放数据库，以免与主要观察历史混在一起。

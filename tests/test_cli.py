@@ -145,6 +145,7 @@ def test_collect_planetary_feed_network_dry_run(
         / "planetary_research_feed"
         / "normal.xml"
     )
+    capture_path = tmp_path / "planetary.capture.zip"
     captured: dict[str, object] = {}
 
     def fake_http_transport(source, **kwargs):  # noqa: ANN001
@@ -167,6 +168,8 @@ def test_collect_planetary_feed_network_dry_run(
                 "--registry",
                 str(project_root / "data" / "sources.toml"),
                 "--dry-run",
+                "--capture-local",
+                str(capture_path),
             ]
         )
         == 0
@@ -175,6 +178,8 @@ def test_collect_planetary_feed_network_dry_run(
     output = capsys.readouterr().out
     assert "dry-run: source=planetary-research-jobs-feed status=success" in output
     assert "records=2" in output
+    assert f"capture={capture_path}" in output
+    assert capture_path.exists()
     assert captured["max_response_bytes"] == 2_000_000
     assert captured["contact_url"] == "https://github.com/IffyZh/astrocareer-observatory"
     assert captured["source"].enabled is True
@@ -187,6 +192,23 @@ def test_collect_planetary_feed_network_dry_run(
         ).fetchone()[0]
     assert access_count == 1
     assert collection_count == 0
+
+    assert (
+        main(
+            [
+                "replay-capture",
+                "planetary-research-jobs-feed",
+                str(capture_path),
+                "--database",
+                str(database_path),
+                "--registry",
+                str(project_root / "data" / "sources.toml"),
+                "--dry-run",
+            ]
+        )
+        == 0
+    )
+    assert "replay-dry-run: source=planetary-research-jobs-feed" in capsys.readouterr().out
 
     with pytest.raises(SystemExit) as exc_info:
         main(

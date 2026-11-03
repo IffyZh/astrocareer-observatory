@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from astrocareer import __version__
+from astrocareer.collectors.capture import CaptureError, CaptureTransport, ReplayTransport
 from astrocareer.collectors.demo import DemoCollector
 from astrocareer.collectors.fixture import FixtureTransport
 from astrocareer.collectors.http import HTTPTransport, TransportError
@@ -109,6 +110,24 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fetch, parse, and normalize without writing collection data.",
     )
+    collect_parser.add_argument(
+        "--capture-local",
+        type=Path,
+        help="Save the response in an immutable local capture for offline replay.",
+    )
+    replay_parser = subparsers.add_parser(
+        "replay-capture",
+        help="Replay a local response capture without network access.",
+    )
+    replay_parser.add_argument("source_id", help="Registered source ID.")
+    replay_parser.add_argument("capture", type=Path, help="Local .capture.zip file.")
+    replay_parser.add_argument("--database", required=True, type=Path)
+    replay_parser.add_argument("--registry", required=True, type=Path)
+    replay_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Parse and normalize without writing collection data.",
+    )
     return parser
 
 
@@ -197,7 +216,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 contact_url=args.contact_url,
                 max_response_bytes=max_response_bytes,
             )
-        except ValueError as error:
+            if args.capture_local is not None:
+                transport = CaptureTransport(transport, args.capture_local)
+        except (CaptureError, ValueError) as error:
             parser.error(str(error))
         with connect_database(args.database) as connection:
             sync_source_registry(connection, registry)
@@ -213,11 +234,49 @@ def main(argv: Sequence[str] | None = None) -> int:
                     record_network_access=True,
                     contact_url=args.contact_url,
                 )
-            except (CollectionBlocked, TransportError) as error:
+            except (CaptureError, CollectionBlocked, TransportError) as error:
                 parser.error(str(error))
         mode = "dry-run" if args.dry_run else "persisted"
         print(
             f"{mode}: source={report.source_id} "
+            f"status={report.collection_status.value} "
+            f"records={report.record_count} issues={report.issue_count} "
+            f"candidates={report.candidate_count}"
+        )
+        if args.capture_local is not None:
+            print(f"capture={args.capture_local}")
+    elif args.command == "replay-capture":
+        try:
+            collector, collector_version, _ = _network_collector(args.source_id)
+        except ValueError as error:
+            parser.error(str(error))
+        initialize_database(args.database)
+        registry = load_source_registry(args.registry)
+        try:
+            source = registry[args.source_id]
+        except KeyError:
+            parser.error(f"Source is not registered: {args.source_id}")
+        transport = ReplayTransport(args.capture)
+        with connect_database(args.database) as connection:
+            if not args.dry_run:
+                sync_source_registry(connection, registry)
+            try:
+                report = run_collection(
+                    connection,
+                    source=source,
+                    collector=collector,
+                    transport=transport,
+                    collector_version=collector_version,
+                    normalizer_version="rules-1",
+                    dry_run=args.dry_run,
+                    allow_disabled=True,
+                    enforce_interval=False,
+                )
+            except CaptureError as error:
+                parser.error(str(error))
+        mode = "dry-run" if args.dry_run else "persisted"
+        print(
+            f"replay-{mode}: source={report.source_id} "
             f"status={report.collection_status.value} "
             f"records={report.record_count} issues={report.issue_count} "
             f"candidates={report.candidate_count}"

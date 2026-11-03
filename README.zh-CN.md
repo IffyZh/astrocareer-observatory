@@ -136,6 +136,8 @@ PYTHONPATH=src python3 -m astrocareer collect-fixture \
   --dry-run
 ```
 
+开发字段规则时，可以把经过审查的网络响应捕获一次并保存在被 Git 忽略的 `data/local/` 下，之后反复离线重放。详见双语[采集运行器说明](docs/runner.zh-CN.md)。
+
 ## 文档语言
 
 面向项目使用者的文档将同时维护英文和简体中文版本。代码、数据库字段、提交信息和 Issue 标签默认使用英文，以方便国际贡献者参与。

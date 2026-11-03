@@ -57,3 +57,30 @@ PYTHONPATH=src python3 -m astrocareer collect \
 ```
 
 The production command uses the restricted `HTTPTransport`, does not expose the fixture-only disabled-source override, and enforces the source's saved minimum interval. A network dry run writes only the synchronized source registry and a minimal access-audit timestamp, so repeated dry runs cannot bypass that interval; it does not save response snapshots, source records, or normalization candidates. Remove `--dry-run` only after inspecting a successful live result; the persisted run stores provenance and normalization candidates for manual review, not accepted public job records.
+
+## Local capture and offline replay
+
+Save one network response while running a normal collection:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer collect \
+  planetary-research-jobs-feed \
+  --database data/local/astrocareer.sqlite3 \
+  --registry data/sources.toml \
+  --capture-local data/local/captures/planetary-2026-11-03.capture.zip
+```
+
+The capture is an immutable ZIP containing the response bytes and a small manifest with its URL, observation time, HTTP metadata, and SHA-256 digest. Existing captures are never overwritten. Captures may contain third-party text or personal data, so keep them under the Git-ignored `data/local/` directory and do not publish them without a separate rights review.
+
+Replay the captured response as often as needed without network access or source rate-limit accounting:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer replay-capture \
+  planetary-research-jobs-feed \
+  data/local/captures/planetary-2026-11-03.capture.zip \
+  --database data/local/replay.sqlite3 \
+  --registry data/sources.toml \
+  --dry-run
+```
+
+Omit `--dry-run` only when a persisted offline replay is intentionally needed. Prefer a separate replay database so parser experiments do not mix with the primary observation history.
