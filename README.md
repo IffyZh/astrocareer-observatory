@@ -140,6 +140,17 @@ PYTHONPATH=src python3 -m astrocareer collect-fixture \
 
 Reviewed network responses can be captured once under Git-ignored `data/local/` and replayed offline while developing field rules. See the bilingual [collection runner guide](docs/runner.md).
 
+Open the latest structured candidates in a local read-only browser with:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db browse \
+  data/local/astrocareer.sqlite3
+```
+
+The command binds only to `127.0.0.1`, opens the system browser, and keeps the
+terminal occupied until `Ctrl+C`. Use `--port 0` to select a free port or
+`--no-open` when running without a desktop browser.
+
 ## Documentation languages
 
 Project-facing documentation will be maintained in English and Simplified Chinese. English is the default language for code, schema identifiers, commit messages, and issue labels so that the repository remains accessible to an international contributor community.

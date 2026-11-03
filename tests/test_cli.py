@@ -63,6 +63,34 @@ def test_database_sync_sources(tmp_path: Path, capsys: pytest.CaptureFixture[str
     assert "Synchronized 4 source definition" in capsys.readouterr().out
 
 
+def test_database_browse_command(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database_path = tmp_path / "astrocareer.sqlite3"
+    calls: list[tuple[Path, int, bool]] = []
+
+    def fake_serve(path: Path, *, port: int, open_browser: bool) -> None:
+        calls.append((path, port, open_browser))
+
+    monkeypatch.setattr("astrocareer.cli.serve_database", fake_serve)
+
+    assert (
+        main(
+            [
+                "db",
+                "browse",
+                str(database_path),
+                "--port",
+                "0",
+                "--no-open",
+            ]
+        )
+        == 0
+    )
+    assert calls == [(database_path, 0, False)]
+
+
 def test_database_import_ror(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     database_path = tmp_path / "astrocareer.sqlite3"
     project_root = Path(__file__).parents[1]

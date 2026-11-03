@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AstroCareer Observatory</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">ASTROCAREER OBSERVATORY</p>
+        <h1>求职数据库浏览器</h1>
+        <p class="subtitle">Local read-only job database browser</p>
+      </div>
+      <div class="metric"><strong id="visible-count">—</strong><span>当前显示 / visible</span></div>
+    </header>
+
+    <main>
+      <section class="controls" aria-label="筛选器 / Filters">
+        <label class="search">
+          <span>搜索 / Search</span>
+          <input id="search" type="search" placeholder="岗位、机构、地点、部门…" autocomplete="off">
+        </label>
+        <label>
+          <span>岗位类别 / Job family</span>
+          <select id="family"><option value="">全部 / All</option></select>
+        </label>
+        <label>
+          <span>排序 / Sort</span>
+          <select id="sort">
+            <option value="deadline">截止日期 / Deadline</option>
+            <option value="observed">最近观察 / Last observed</option>
+            <option value="institution">机构 / Institution</option>
+          </select>
+        </label>
+      </section>
+
+      <p id="status" class="status" role="status">正在读取数据库… / Loading database…</p>
+      <section id="cards" class="cards" aria-live="polite"></section>
+    </main>
+
+    <dialog id="details">
+      <button id="close" class="close" aria-label="关闭 / Close">×</button>
+      <p id="detail-family" class="tag"></p>
+      <h2 id="detail-title"></h2>
+      <p id="detail-institution" class="lead"></p>
+      <dl id="detail-fields"></dl>
+      <div id="detail-links" class="detail-links"></div>
+      <p class="notice">未报告的门槛、技能、申请人数和国际申请资格不会被推断。<br>Unreported requirements, skills, applicant counts, and international eligibility are not inferred.</p>
+    </dialog>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

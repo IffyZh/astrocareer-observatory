@@ -1,10 +1,12 @@
 """Command-line interface for AstroCareer Observatory."""
 
 import argparse
+import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
 
 from astrocareer import __version__
+from astrocareer.browser import serve_database
 from astrocareer.collectors.capture import CaptureError, CaptureTransport, ReplayTransport
 from astrocareer.collectors.fixture import FixtureTransport
 from astrocareer.collectors.http import HTTPTransport, TransportError
@@ -72,6 +74,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     renormalize_parser.add_argument("path", type=Path, help="Path to the SQLite database.")
     renormalize_parser.add_argument("source_id", help="Collector plugin source ID.")
+    browse_parser = database_subparsers.add_parser(
+        "browse",
+        help="Open a local read-only web interface for the database.",
+    )
+    browse_parser.add_argument("path", type=Path, help="Path to the SQLite database.")
+    browse_parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Loopback TCP port (default: 8765; use 0 for an automatic port).",
+    )
+    browse_parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Start the service without opening the system browser.",
+    )
     plugins_parser = subparsers.add_parser(
         "plugins", help="List and inspect collector plugins."
     )
@@ -190,6 +208,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"inserted={report.inserted_count} reused={report.reused_count} "
             f"superseded={report.superseded_count}"
         )
+    elif args.command == "db" and args.database_command == "browse":
+        if not 0 <= args.port <= 65535:
+            parser.error("Port must be between 0 and 65535")
+        try:
+            serve_database(
+                args.path,
+                port=args.port,
+                open_browser=not args.no_open,
+            )
+        except (FileNotFoundError, OSError, sqlite3.Error) as error:
+            parser.error(str(error))
     elif args.command == "plugins" and args.plugin_command == "list":
         try:
             references = collector_plugin_references()

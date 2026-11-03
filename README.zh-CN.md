@@ -140,6 +140,15 @@ PYTHONPATH=src python3 -m astrocareer collect-fixture \
 
 开发字段规则时，可以把经过审查的网络响应捕获一次并保存在被 Git 忽略的 `data/local/` 下，之后反复离线重放。详见双语[采集运行器说明](docs/runner.zh-CN.md)。
 
+可以用以下命令在本地只读浏览器中查看最新的结构化候选：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db browse \
+  data/local/astrocareer.sqlite3
+```
+
+该命令只监听 `127.0.0.1`，会自动打开系统浏览器，并持续占用终端，直到按下 `Ctrl+C`。使用 `--port 0` 可以自动选择空闲端口；在没有桌面浏览器的环境中可加 `--no-open`。
+
 ## 文档语言
 
 面向项目使用者的文档将同时维护英文和简体中文版本。代码、数据库字段、提交信息和 Issue 标签默认使用英文，以方便国际贡献者参与。

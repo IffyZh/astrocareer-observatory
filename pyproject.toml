@@ -43,7 +43,7 @@ astrocareer = "astrocareer.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-astrocareer = ["database/migrations/*.sql"]
+astrocareer = ["database/migrations/*.sql", "browser_assets/*"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
