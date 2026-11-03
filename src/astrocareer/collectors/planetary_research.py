@@ -17,6 +17,7 @@ from astrocareer.collectors.base import (
     SourcePosting,
     Transport,
 )
+from astrocareer.plugins import CollectorPlugin
 
 ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
 ATOM = f"{{{ATOM_NAMESPACE}}}"
@@ -353,3 +354,14 @@ class PlanetaryResearchFeedCollector:
                 ),
             ),
         )
+
+
+plugin = CollectorPlugin(
+    source_id=PlanetaryResearchFeedCollector.source_id,
+    collector_factory=PlanetaryResearchFeedCollector,
+    collector_version="planetary-research-feed-1",
+    normalizer_version="rules-1",
+    fixture_content_type="application/atom+xml; charset=utf-8",
+    max_response_bytes=2_000_000,
+    supports_network=True,
+)

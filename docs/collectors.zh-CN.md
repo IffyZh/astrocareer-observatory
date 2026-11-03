@@ -41,7 +41,7 @@ Collector -> RequestSpec -> Transport -> RawSnapshot
 ## 新增来源的步骤
 
 1. 启用采集前登记并审查来源。
-2. 在 `src/astrocareer/collectors/` 下添加采集器模块。
+2. 根据[插件开发指南](plugin-development.zh-CN.md)实现内置或外部采集器插件。
 3. 在 `tests/fixtures/<source_id>/` 下添加经过最小化处理的本地测试页面。
 4. 测试正常页面、明确空列表、异常记录和页面布局变化。
 5. 验证来源记录 ID 与规范 URL 是否稳定。
@@ -59,6 +59,6 @@ Collector -> RequestSpec -> Transport -> RawSnapshot
 
 ## 当前实现
 
-`DemoCollector` 及其 `.test` 测试页面在不访问网络的情况下验证了上述契约。`PlanetaryResearchFeedCollector` 是第一个经过审查的真实来源适配器。它只读取官方 Atom feed，最多接受 1,000 条记录，验证 feed 与条目身份，拒绝 DTD/实体声明，并主动丢弃完整正文、联系人信息和发布者 ORCID 标识。
+`DemoCollector` 和 `PlanetaryResearchFeedCollector` 现在是使用同一 API 的内置插件，外部包也可以使用这套 API。`DemoCollector` 及其 `.test` 测试页面在不访问网络的情况下验证了上述契约。`PlanetaryResearchFeedCollector` 是第一个经过审查的真实来源适配器。它只读取官方 Atom feed，最多接受 1,000 条记录，验证 feed 与条目身份，拒绝 DTD/实体声明，并主动丢弃完整正文、联系人信息和发布者 ORCID 标识。
 
-在项目具备公开联系 URL 前，该真实来源仍保持禁用。解析器已经通过合成夹具及一次临时真实 feed 快照验证；真实响应不会提交到仓库。
+该真实来源已经启用，可由明确的命令行操作运行，并使用公开仓库作为联系 URL。解析器已经通过合成 fixture 和本地真实 feed 捕获验证；真实响应不会提交到仓库。

@@ -86,6 +86,8 @@ AstroCareer Observatory 目前处于预开发阶段。项目将收集、规范�
 
 在第一个带版本号的发布之前，接口、数据库模式和仓库结构都可能改变。
 
+采集器使用带版本的插件 API。可以运行 `PYTHONPATH=src python3 -m astrocareer plugins list` 查看可用适配器；如需在不修改采集运行器的情况下增加来源，请参阅[采集器插件开发指南](docs/plugin-development.zh-CN.md)。
+
 ## 本地数据库快速开始
 
 在源码仓库中，可以使用以下命令初始化一个空的 schema-v8 SQLite 数据库：

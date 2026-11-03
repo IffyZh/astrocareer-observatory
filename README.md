@@ -86,6 +86,8 @@ The first milestone will provide:
 
 Interfaces, schemas, and repository layout may change before the first tagged release.
 
+Collectors use a versioned plugin API. Run `PYTHONPATH=src python3 -m astrocareer plugins list` to inspect available adapters, or see the [collector plugin development guide](docs/plugin-development.md) to add a source without modifying the collection runner.
+
 ## Local database quick start
 
 From a source checkout, initialize an empty schema-v8 SQLite database with:

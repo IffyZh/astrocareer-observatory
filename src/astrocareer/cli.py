@@ -6,12 +6,15 @@ from pathlib import Path
 
 from astrocareer import __version__
 from astrocareer.collectors.capture import CaptureError, CaptureTransport, ReplayTransport
-from astrocareer.collectors.demo import DemoCollector
 from astrocareer.collectors.fixture import FixtureTransport
 from astrocareer.collectors.http import HTTPTransport, TransportError
-from astrocareer.collectors.planetary_research import PlanetaryResearchFeedCollector
 from astrocareer.database import connect_database, initialize_database, seed_demo_data
 from astrocareer.importers import import_ror_dump
+from astrocareer.plugins import (
+    PluginError,
+    collector_plugin_references,
+    get_collector_plugin,
+)
 from astrocareer.runner import CollectionBlocked, run_collection
 from astrocareer.sources import load_source_registry, sync_source_registry
 
@@ -19,33 +22,11 @@ from astrocareer.sources import load_source_registry, sync_source_registry
 PROJECT_CONTACT_URL = "https://github.com/IffyZh/astrocareer-observatory"
 
 
-def _fixture_collector(source_id: str):
-    collectors = {
-        DemoCollector.source_id: (DemoCollector(), "text/html; charset=utf-8", "demo-1"),
-        PlanetaryResearchFeedCollector.source_id: (
-            PlanetaryResearchFeedCollector(),
-            "application/atom+xml; charset=utf-8",
-            "planetary-research-feed-1",
-        ),
-    }
-    try:
-        return collectors[source_id]
-    except KeyError as error:
-        raise ValueError(f"No fixture collector is registered for {source_id}") from error
-
-
-def _network_collector(source_id: str):
-    collectors = {
-        PlanetaryResearchFeedCollector.source_id: (
-            PlanetaryResearchFeedCollector(),
-            "planetary-research-feed-1",
-            2_000_000,
-        ),
-    }
-    try:
-        return collectors[source_id]
-    except KeyError as error:
-        raise ValueError(f"No production collector is registered for {source_id}") from error
+def _collector_plugin(source_id: str, *, require_network: bool = False):
+    plugin = get_collector_plugin(source_id)
+    if require_network and not plugin.supports_network:
+        raise PluginError(f"Collector plugin does not support network use: {source_id}")
+    return plugin
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -80,6 +61,17 @@ def build_parser() -> argparse.ArgumentParser:
     ror_parser.add_argument("dump", type=Path, help="Path to the extracted ROR JSON dump.")
     ror_parser.add_argument("--dataset-version", required=True)
     ror_parser.add_argument("--registry", required=True, type=Path)
+    plugins_parser = subparsers.add_parser(
+        "plugins", help="List and inspect collector plugins."
+    )
+    plugin_subparsers = plugins_parser.add_subparsers(dest="plugin_command")
+    plugin_subparsers.add_parser(
+        "list", help="List built-in and installed collector plugin names."
+    )
+    inspect_parser = plugin_subparsers.add_parser(
+        "inspect", help="Load and inspect one collector plugin."
+    )
+    inspect_parser.add_argument("source_id", help="Registered plugin source ID.")
     fixture_parser = subparsers.add_parser(
         "collect-fixture",
         help="Run a collector against a local fixture without network access.",
@@ -168,15 +160,41 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"records={report.record_count} inserted={report.inserted_count} "
             f"updated={report.updated_count} sha256={report.content_sha256}"
         )
+    elif args.command == "plugins" and args.plugin_command == "list":
+        try:
+            references = collector_plugin_references()
+        except PluginError as error:
+            parser.error(str(error))
+        for source_id, reference in references.items():
+            print(f"{source_id}\t{reference.origin}")
+    elif args.command == "plugins" and args.plugin_command == "inspect":
+        try:
+            references = collector_plugin_references()
+            reference = references[args.source_id]
+            plugin = reference.load()
+        except (KeyError, PluginError) as error:
+            parser.error(str(error))
+        print(f"source_id={plugin.source_id}")
+        print(f"origin={reference.origin}")
+        print(f"api_version={plugin.api_version}")
+        print(f"collector_version={plugin.collector_version}")
+        print(f"normalizer_version={plugin.normalizer_version}")
+        print(f"fixture_content_type={plugin.fixture_content_type}")
+        print(f"max_response_bytes={plugin.max_response_bytes}")
+        print(f"supports_network={'yes' if plugin.supports_network else 'no'}")
     elif args.command == "collect-fixture":
         try:
-            collector, content_type, collector_version = _fixture_collector(args.source_id)
-        except ValueError as error:
+            plugin = _collector_plugin(args.source_id)
+            collector = plugin.create_collector()
+        except PluginError as error:
             parser.error(str(error))
         initialize_database(args.database)
         registry = load_source_registry(args.registry)
         source = registry[args.source_id]
-        transport = FixtureTransport(args.fixture, content_type=content_type)
+        transport = FixtureTransport(
+            args.fixture,
+            content_type=plugin.fixture_content_type,
+        )
         with connect_database(args.database) as connection:
             if not args.dry_run:
                 sync_source_registry(connection, registry)
@@ -185,8 +203,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source=source,
                 collector=collector,
                 transport=transport,
-                collector_version=collector_version,
-                normalizer_version="rules-1",
+                collector_version=plugin.collector_version,
+                normalizer_version=plugin.normalizer_version,
                 dry_run=args.dry_run,
                 allow_disabled=True,
                 enforce_interval=False,
@@ -199,10 +217,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     elif args.command == "collect":
         try:
-            collector, collector_version, max_response_bytes = _network_collector(
-                args.source_id
-            )
-        except ValueError as error:
+            plugin = _collector_plugin(args.source_id, require_network=True)
+            collector = plugin.create_collector()
+        except PluginError as error:
             parser.error(str(error))
         initialize_database(args.database)
         registry = load_source_registry(args.registry)
@@ -214,7 +231,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             transport = HTTPTransport(
                 source,
                 contact_url=args.contact_url,
-                max_response_bytes=max_response_bytes,
+                max_response_bytes=plugin.max_response_bytes,
             )
             if args.capture_local is not None:
                 transport = CaptureTransport(transport, args.capture_local)
@@ -228,8 +245,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     source=source,
                     collector=collector,
                     transport=transport,
-                    collector_version=collector_version,
-                    normalizer_version="rules-1",
+                    collector_version=plugin.collector_version,
+                    normalizer_version=plugin.normalizer_version,
                     dry_run=args.dry_run,
                     record_network_access=True,
                     contact_url=args.contact_url,
@@ -247,8 +264,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"capture={args.capture_local}")
     elif args.command == "replay-capture":
         try:
-            collector, collector_version, _ = _network_collector(args.source_id)
-        except ValueError as error:
+            plugin = _collector_plugin(args.source_id, require_network=True)
+            collector = plugin.create_collector()
+        except PluginError as error:
             parser.error(str(error))
         initialize_database(args.database)
         registry = load_source_registry(args.registry)
@@ -266,8 +284,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     source=source,
                     collector=collector,
                     transport=transport,
-                    collector_version=collector_version,
-                    normalizer_version="rules-1",
+                    collector_version=plugin.collector_version,
+                    normalizer_version=plugin.normalizer_version,
                     dry_run=args.dry_run,
                     allow_disabled=True,
                     enforce_interval=False,

@@ -21,6 +21,19 @@ def test_empty_invocation() -> None:
     assert main([]) == 0
 
 
+def test_plugin_commands(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["plugins", "list"]) == 0
+    listing = capsys.readouterr().out
+    assert "demo-html-source\tbuilt-in" in listing
+    assert "planetary-research-jobs-feed\tbuilt-in" in listing
+
+    assert main(["plugins", "inspect", "planetary-research-jobs-feed"]) == 0
+    details = capsys.readouterr().out
+    assert "api_version=1" in details
+    assert "collector_version=planetary-research-feed-1" in details
+    assert "supports_network=yes" in details
+
+
 def test_database_init(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     database_path = tmp_path / "astrocareer.sqlite3"
 

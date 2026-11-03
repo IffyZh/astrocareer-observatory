@@ -41,7 +41,7 @@ Every collector must:
 ## Adding a source
 
 1. Register and review the source before enabling collection.
-2. Add a collector module under `src/astrocareer/collectors/`.
+2. Implement a built-in or external collector plugin using the [plugin development guide](plugin-development.md).
 3. Add minimized local fixtures under `tests/fixtures/<source_id>/`.
 4. Test a normal page, an explicit empty page, malformed records, and layout drift.
 5. Verify stable source IDs and canonical URLs.
@@ -59,6 +59,6 @@ Every collector must:
 
 ## Current implementation
 
-`DemoCollector` and its `.test` fixtures prove the contract without making network requests. `PlanetaryResearchFeedCollector` is the first reviewed real-source adapter. It reads only the official Atom feed, accepts at most 1,000 entries, validates feed and entry identity, rejects DTD/entity declarations, and discards full descriptions, contact details, and poster ORCID identifiers.
+`DemoCollector` and `PlanetaryResearchFeedCollector` are built-in plugins using the same API exposed to external packages. `DemoCollector` and its `.test` fixtures prove the contract without making network requests. `PlanetaryResearchFeedCollector` is the first reviewed real-source adapter. It reads only the official Atom feed, accepts at most 1,000 entries, validates feed and entry identity, rejects DTD/entity declarations, and discards full descriptions, contact details, and poster ORCID identifiers.
 
-The real source remains disabled until the project has a public contact URL. Its parser has been validated against synthetic fixtures and a transient live-feed snapshot; live responses are not committed to the repository.
+The real source is enabled for explicit command-line runs and uses the public repository as its contact URL. Its parser has been validated against synthetic fixtures and a local live-feed capture; live responses are not committed to the repository.
