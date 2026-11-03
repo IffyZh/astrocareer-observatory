@@ -1,6 +1,7 @@
 """Command-line interface for AstroCareer Observatory."""
 
 import argparse
+import getpass
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
@@ -11,10 +12,14 @@ from astrocareer.collectors.capture import CaptureError, CaptureTransport, Repla
 from astrocareer.collectors.fixture import FixtureTransport
 from astrocareer.collectors.http import HTTPTransport, TransportError
 from astrocareer.database import (
+    DEFAULT_ARTIFACT,
+    DEFAULT_REPOSITORY,
+    GitHubArtifactSyncError,
     connect_database,
     initialize_database,
     renormalize_source_observations,
     seed_demo_data,
+    sync_github_database,
 )
 from astrocareer.importers import import_ror_dump
 from astrocareer.plugins import (
@@ -89,6 +94,35 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-open",
         action="store_true",
         help="Start the service without opening the system browser.",
+    )
+    github_sync_parser = database_subparsers.add_parser(
+        "sync-github",
+        help="Download and verify the latest collector-state database artifact.",
+    )
+    github_sync_parser.add_argument(
+        "path",
+        type=Path,
+        help="Local destination for the synchronized SQLite database.",
+    )
+    github_sync_parser.add_argument(
+        "--repository",
+        default=DEFAULT_REPOSITORY,
+        help=f"GitHub OWNER/REPO (default: {DEFAULT_REPOSITORY}).",
+    )
+    github_sync_parser.add_argument(
+        "--artifact",
+        default=DEFAULT_ARTIFACT,
+        help=f"Artifact name (default: {DEFAULT_ARTIFACT}).",
+    )
+    github_sync_parser.add_argument(
+        "--replace-unmanaged",
+        action="store_true",
+        help="Replace an existing database that was not created by this sync command.",
+    )
+    github_sync_parser.add_argument(
+        "--prompt-token",
+        action="store_true",
+        help="Securely prompt for a GitHub token instead of reading token environment variables.",
     )
     plugins_parser = subparsers.add_parser(
         "plugins", help="List and inspect collector plugins."
@@ -219,6 +253,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         except (FileNotFoundError, OSError, sqlite3.Error) as error:
             parser.error(str(error))
+    elif args.command == "db" and args.database_command == "sync-github":
+        token = getpass.getpass("GitHub token: ") if args.prompt_token else None
+        try:
+            report = sync_github_database(
+                args.path,
+                repository=args.repository,
+                artifact_name=args.artifact,
+                token=token,
+                replace_unmanaged=args.replace_unmanaged,
+            )
+        except GitHubArtifactSyncError as error:
+            parser.error(str(error))
+        print(
+            f"synchronized: repository={report.repository} "
+            f"artifact={report.artifact_name} id={report.artifact_id} "
+            f"created_at={report.artifact_created_at} "
+            f"records={report.distinct_record_count} bytes={report.database_bytes} "
+            f"destination={report.destination}"
+        )
     elif args.command == "plugins" and args.plugin_command == "list":
         try:
             references = collector_plugin_references()

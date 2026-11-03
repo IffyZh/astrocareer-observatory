@@ -7,6 +7,7 @@ import pytest
 
 from astrocareer.cli import main
 from astrocareer.collectors.fixture import FixtureTransport
+from astrocareer.database.github_sync import GitHubSyncReport
 
 
 def test_version(capsys: pytest.CaptureFixture[str]) -> None:
@@ -89,6 +90,52 @@ def test_database_browse_command(
         == 0
     )
     assert calls == [(database_path, 0, False)]
+
+
+def test_database_sync_github_command(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database_path = tmp_path / "github.sqlite3"
+
+    def fake_sync(path: Path, **kwargs: object) -> GitHubSyncReport:
+        assert path == database_path
+        assert kwargs["repository"] == "example/project"
+        assert kwargs["artifact_name"] == "state"
+        assert kwargs["token"] == "secret-token"
+        assert kwargs["replace_unmanaged"] is False
+        return GitHubSyncReport(
+            repository="example/project",
+            artifact_name="state",
+            artifact_id=42,
+            artifact_created_at="2026-11-03T17:39:50Z",
+            archive_sha256="a" * 64,
+            database_bytes=1000,
+            distinct_record_count=131,
+            destination=str(path),
+        )
+
+    monkeypatch.setattr("astrocareer.cli.sync_github_database", fake_sync)
+    monkeypatch.setattr("astrocareer.cli.getpass.getpass", lambda _prompt: "secret-token")
+    assert (
+        main(
+            [
+                "db",
+                "sync-github",
+                str(database_path),
+                "--repository",
+                "example/project",
+                "--artifact",
+                "state",
+                "--prompt-token",
+            ]
+        )
+        == 0
+    )
+    output = capsys.readouterr().out
+    assert "artifact=state id=42" in output
+    assert "records=131" in output
 
 
 def test_database_import_ror(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

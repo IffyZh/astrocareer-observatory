@@ -90,6 +90,38 @@ AstroCareer Observatory 目前处于预开发阶段。项目将收集、规范�
 
 ## 本地数据库快速开始
 
+常用命令行任务：
+
+| 任务 | 命令 |
+|---|---|
+| 初始化本地数据库 | `python3 -m astrocareer db init PATH` |
+| 同步 GitHub Actions 最新数据库 | `python3 -m astrocareer db sync-github PATH` |
+| 打开只读浏览器 | `python3 -m astrocareer db browse PATH` |
+| 同步经过审查的来源定义 | `python3 -m astrocareer db sync-sources PATH data/sources.toml` |
+| 采集经过审查的真实 feed | `python3 -m astrocareer collect planetary-research-jobs-feed --database PATH --registry data/sources.toml` |
+
+直接在源码目录运行时请像下面的示例一样添加 `PYTHONPATH=src`；也可以先把项目安装进虚拟环境。
+
+### 同步自动采集数据库
+
+GitHub 要求通过身份验证后才能下载 Actions artifact。请创建仅限本仓库、权限为 **Actions: read** 的细粒度令牌。项目优先读取 `GH_TOKEN`，其次读取 `GITHUB_TOKEN`，并且不会把令牌写入磁盘。最简单的交互方式使用隐藏输入，因此令牌不会进入 shell 历史：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db sync-github \
+  data/local/github-collector.sqlite3 --prompt-token
+```
+
+无人值守运行时请去掉 `--prompt-token`，并通过进程环境提供 `GH_TOKEN` 或 `GITHUB_TOKEN`。
+
+命令会选择最新且未过期的 `collector-state` artifact；在 GitHub 提供摘要时验证 SHA-256，并检查 ZIP 结构和 SQLite 完整性，最后原子替换目标文件。相邻的 `.sync.json` 文件记录 artifact ID 和摘要，之后可以安全更新这个受管理的目标。如果已有数据库没有匹配的同步元数据，命令不会覆盖它；只有明确添加 `--replace-unmanaged` 才会覆盖。使用独立路径通常更安全。
+
+同步完成后可以直接浏览：
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db browse \
+  data/local/github-collector.sqlite3
+```
+
 在源码仓库中，可以使用以下命令初始化一个空的 schema-v8 SQLite 数据库：
 
 ```bash

@@ -90,6 +90,49 @@ Collectors use a versioned plugin API. Run `PYTHONPATH=src python3 -m astrocaree
 
 ## Local database quick start
 
+Common command-line tasks:
+
+| Task | Command |
+|---|---|
+| Initialize a local database | `python3 -m astrocareer db init PATH` |
+| Synchronize the latest GitHub Actions database | `python3 -m astrocareer db sync-github PATH` |
+| Open the read-only browser | `python3 -m astrocareer db browse PATH` |
+| Synchronize reviewed source definitions | `python3 -m astrocareer db sync-sources PATH data/sources.toml` |
+| Collect the reviewed live feed | `python3 -m astrocareer collect planetary-research-jobs-feed --database PATH --registry data/sources.toml` |
+
+Run source-checkout commands with `PYTHONPATH=src`, as shown below, or install
+the project in a virtual environment first.
+
+### Synchronize the automated database
+
+GitHub requires authenticated read access to download an Actions artifact. Use
+a fine-grained token limited to this repository with **Actions: read**. The
+project reads `GH_TOKEN` first and `GITHUB_TOKEN` second; it never writes the
+token to disk. The simplest interactive form uses a hidden prompt, so the token
+does not enter shell history:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db sync-github \
+  data/local/github-collector.sqlite3 --prompt-token
+```
+
+For unattended use, omit `--prompt-token` and provide `GH_TOKEN` or
+`GITHUB_TOKEN` in the process environment.
+
+The command selects the newest unexpired `collector-state` artifact, verifies
+its SHA-256 when GitHub supplies one, checks the ZIP shape and SQLite integrity,
+then atomically installs it. A neighboring `.sync.json` file records the
+artifact ID and digest. Later runs may safely update this managed destination.
+An existing database without matching sync metadata is not overwritten unless
+`--replace-unmanaged` is explicitly supplied; using a separate path is safer.
+
+Browse the synchronized copy with:
+
+```bash
+PYTHONPATH=src python3 -m astrocareer db browse \
+  data/local/github-collector.sqlite3
+```
+
 From a source checkout, initialize an empty schema-v8 SQLite database with:
 
 ```bash
