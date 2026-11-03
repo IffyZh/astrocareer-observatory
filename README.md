@@ -82,7 +82,7 @@ The first milestone will provide:
 
 ## Status
 
-**Pre-alpha.** There is no released dataset or scheduled collection yet. One reviewed Atom-feed source is enabled for explicit command-line runs, and an offline ROR institution importer is implemented.
+**Pre-alpha.** Scheduled collection is enabled for one reviewed Atom-feed source. The internal SQLite state is retained as a short-lived GitHub Actions artifact; no public dataset release has been made yet. An offline ROR institution importer is also implemented.
 
 Interfaces, schemas, and repository layout may change before the first tagged release.
 

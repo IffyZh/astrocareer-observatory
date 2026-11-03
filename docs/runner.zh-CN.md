@@ -93,3 +93,9 @@ PYTHONPATH=src python3 -m astrocareer db renormalize-source \
 ```
 
 同一规范化版本重复执行不会产生重复记录。命令不会修改来源观察记录；旧版待审核候选会标为 `superseded`，当前版本候选以 `pending` 状态等待审核。
+
+## 定时采集
+
+`.github/workflows/collect.yml` 每天两次运行经过审查的 Planetary Research Jobs feed 采集器，也支持手动触发。并发组保证同一时刻最多只有一个采集任务。每次成功运行会恢复最近的 `collector-state` artifact，追加一组不可变的观察记录和规范化候选，检查 SQLite 完整性，再把更新后的数据库保存 14 天，供下一次运行延续历史。
+
+数据库 artifact 包含快照元数据和采集器白名单允许的来源记录，但不包含原始 HTTP 响应字节或完整招聘描述。它是运行状态，并不是带版本的公开数据集发布。如果找不到可用的旧 artifact，工作流会新建数据库，并在运行摘要中明确说明。官方公告链接继续只作为数据保存，本工作流不会请求这些链接。

@@ -96,3 +96,19 @@ PYTHONPATH=src python3 -m astrocareer db renormalize-source \
 The command is idempotent for one normalizer version. It leaves source
 observations unchanged, marks older pending candidates as `superseded`, and
 creates current candidates as `pending` for review.
+
+## Scheduled collection
+
+`.github/workflows/collect.yml` runs the reviewed Planetary Research Jobs feed
+collector twice daily and can also be started manually. Its concurrency group
+allows only one collection at a time. Each successful run restores the latest
+`collector-state` artifact, writes a new immutable observation and normalization
+candidate set, checks SQLite integrity, and uploads the updated database for 14
+days so the next run can continue the history.
+
+The database artifact contains snapshot metadata and the collector's allowlisted
+source records, but not raw HTTP response bytes or full job descriptions. It is
+operational state, not a versioned public dataset release. If no usable earlier
+artifact exists, the workflow starts a new database and states this explicitly
+in the run summary. Official-announcement links remain data only and are never
+requested by this workflow.
